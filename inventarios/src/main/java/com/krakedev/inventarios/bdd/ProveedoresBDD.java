@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-
 import com.krakedev.inventarios.entidades.Proveedor;
 import com.krakedev.inventarios.entidades.TipoDocumentos;
 import com.krakedev.inventarios.excepciones.KrakedevException;
@@ -22,21 +21,24 @@ public class ProveedoresBDD {
 		
 		try {
 			con = ConexionBDD.obtenerConexion();
-			ps = con.prepareStatement("select identificador ,codigo_tipo_documento,nombre_proveedor ,telefono_proveedor ,correo_proveedor,direccion_proveedor "
-					+ "from proveedores "
-					+ "where upper(nombre_proveedor) like ?");
+			ps = con.prepareStatement("select prov.identificador,prov.codigo_tipo_documento,td.descripcion,prov.nombre_proveedor,prov.telefono_proveedor,prov.correo_proveedor,prov.direccion_proveedor "
+					+ "from proveedores prov, tipo_documentos td "
+					+ "where prov.codigo_tipo_documento = td.codigo_tipo_documento "
+					+ "and upper(nombre_proveedor) like ?");
 			ps.setString(1,"%"+subcadena.toUpperCase()+"%");
 			rs = ps.executeQuery();
 			
 			while(rs.next()) {
 				String identificador = rs.getString("identificador");
-				String tipoDocumento = rs.getString("codigo_tipo_documento");
+				String codigoTipoDocumento = rs.getString("codigo_tipo_documento");
+				String descripcionTipoDocumento = rs.getString("descripcion");
 				String nombre = rs.getString("nombre_proveedor");
 				String telefono = rs.getString("telefono_proveedor");
 				String correo = rs.getString("correo_proveedor");
 				String direccion = rs.getString("direccion_proveedor");
+				TipoDocumentos td = new TipoDocumentos(codigoTipoDocumento, descripcionTipoDocumento);
 				
-				proveedor = new Proveedor(identificador, tipoDocumento, nombre, telefono, correo, direccion);
+				proveedor = new Proveedor(identificador, td, nombre, telefono, correo, direccion);
 				proveedores.add(proveedor);
 				
 			}
@@ -83,5 +85,39 @@ public class ProveedoresBDD {
 		}
 		
 		return tipoDocumentos;
+	}
+	
+	
+	public void insertar(Proveedor proveedor) throws KrakedevException {
+		Connection con = null;
+		PreparedStatement ps = null;
+		try {
+			con = ConexionBDD.obtenerConexion();
+			ps = con.prepareStatement("insert into proveedores(identificador,codigo_tipo_documento,nombre_proveedor,telefono_proveedor,correo_proveedor,direccion_proveedor)" 
+					+ "values(?,?,?,?,?,?);");
+			
+			ps.setString(1, proveedor.getIdentificador());
+			ps.setString(2, proveedor.getTipoDocumento().getCodigo());
+			ps.setString(3, proveedor.getNombre());
+			ps.setString(4, proveedor.getTelefono() );
+			ps.setString(5, proveedor.getCorreo());
+			ps.setString(6, proveedor.getDireccion());
+
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new KrakedevException("Error al insertar el cliente. Detalle : " + e.getMessage());
+		} catch (KrakedevException e) {
+			throw e;
+		} finally {
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
 	}
 }
