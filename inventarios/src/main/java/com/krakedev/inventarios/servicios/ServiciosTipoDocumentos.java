@@ -29,6 +29,5 @@ public class ServiciosTipoDocumentos {
 			//si algo falla devuelve el status 500 
 			return Response.serverError().build();
 		}
-		//return clientes;
 	}
 }
