@@ -83,4 +83,55 @@ public class PedidosBDD {
 
 		}
 	}
+	
+	public void actualizar(Pedido pedido) throws KrakedevException {
+		Connection con = null;
+		PreparedStatement ps = null;
+		PreparedStatement psDet = null;
+	
+			
+		try {
+			con = ConexionBDD.obtenerConexion();
+			//Statement.RETURN_GENERATED_KEYS sirve para poder recuperar las claves generadas en la cabecera de pedido 
+			ps = con.prepareStatement("update cabecera_pedido set codigo_estado_pedido='R' where numero_cabecera_pedido=?");
+			ps.setInt(1, pedido.getCodigo());
+			
+			
+			ps.executeUpdate();
+			
+			ArrayList<DetallePedido>detallesPedido = pedido.getDetalles();
+			DetallePedido det;
+			
+			for(int i=0 ;i < detallesPedido.size();i++) {
+				det = detallesPedido.get(i);
+				psDet = con.prepareStatement("update detalle_pedido set cantidad_recibida=?, subtotal=? WHERE codigo_detalle_pedido=?");
+		
+				
+				psDet.setInt(1, det.getCantidadRecibida());
+				BigDecimal pv = det.getProducto().getPrecioVenta();
+				BigDecimal cantidad = new BigDecimal(det.getCantidadRecibida());
+				BigDecimal subtotal =  pv.multiply(cantidad);
+				psDet.setBigDecimal(2, subtotal);
+				psDet.setInt(3, det.getCodigo());
+				
+				psDet.executeUpdate();
+				
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new KrakedevException("Error al insertar el producto. Detalle : " + e.getMessage());
+		} catch (KrakedevException e) {
+			throw e;
+		} finally {
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+	}
 }
