@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -88,7 +89,10 @@ public class PedidosBDD {
 		Connection con = null;
 		PreparedStatement ps = null;
 		PreparedStatement psDet = null;
-	
+		PreparedStatement psHist = null;
+		
+		Date fechaActual = new Date();
+		Timestamp fechaHoraActual= new Timestamp(fechaActual.getTime()); 
 			
 		try {
 			con = ConexionBDD.obtenerConexion();
@@ -115,6 +119,18 @@ public class PedidosBDD {
 				psDet.setInt(3, det.getCodigo());
 				
 				psDet.executeUpdate();
+				
+				
+				psHist= con.prepareStatement("insert into historial_stock(fecha,referencia,codigo_producto,cantidad)"
+						+ "values(?,?,?,?)");
+				
+				psHist.setTimestamp(1, fechaHoraActual);
+				psHist.setString(2, "Pedido " + pedido.getCodigo());
+				psHist.setInt(3, det.getProducto().getCodigo());
+				psHist.setInt(4, det.getCantidadRecibida());
+				
+				System.out.println("Insertando historial..................");
+				psHist.executeUpdate();
 				
 			}
 			
