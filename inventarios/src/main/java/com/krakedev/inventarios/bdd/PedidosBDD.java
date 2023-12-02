@@ -129,7 +129,6 @@ public class PedidosBDD {
 				psHist.setInt(3, det.getProducto().getCodigo());
 				psHist.setInt(4, det.getCantidadRecibida());
 				
-				System.out.println("Insertando historial..................");
 				psHist.executeUpdate();
 				
 			}

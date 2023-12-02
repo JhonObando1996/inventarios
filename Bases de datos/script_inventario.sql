@@ -103,6 +103,8 @@ insert into tipo_documentos(codigo_tipo_documento,descripcion)
 values('C', 'Cedula');
 insert into tipo_documentos(codigo_tipo_documento,descripcion)
 values('R', 'RUC');
+insert into tipo_documentos(codigo_tipo_documento,descripcion)
+values('P', 'Pasaporte');
 
 --select * from tipo_documentos
 
@@ -121,6 +123,8 @@ insert into proveedores(identificador,codigo_tipo_documento,nombre_proveedor,tel
 values('0928329','R', 'Jhon Obando', '0967115322','jhoda1996@gmail.com','San Roque');
 insert into proveedores(identificador,codigo_tipo_documento,nombre_proveedor,telefono_proveedor,correo_proveedor,direccion_proveedor)
 values('0928329777','C', 'Snack S.A', '0989657895','snacksa@gmail.com','La Carolina');
+insert into proveedores(identificador,codigo_tipo_documento,nombre_proveedor,telefono_proveedor,correo_proveedor,direccion_proveedor)
+values('0989898980','C', 'Jhonathan Rojas', '0987985698','jhonathan1998@gmail.com','La Tola');
 
 --select * from proveedores
 
@@ -154,6 +158,8 @@ values('0928329','20/11/2023','R');
 insert into cabecera_pedido(identificador,fecha,codigo_estado_pedido)
 values('0928329','20/11/2023','R');
 
+delete from cabecera_pedido
+where numero_cabecera_pedido = 4;
 --select * from cabecera_pedido
 
 drop table if exists detalle_pedido;
@@ -236,7 +242,71 @@ values(1,1,5,0.58,2.9,3.25);
 insert into detalle_ventas(codigo_cabecera_ventas, codigo_producto, cantidad, precio_venta, subtotal, subtotal_con_iva)
 values(1,4,1,0.36,0.36,0.4);
 
+--select * from detalle_ventas
+
+select prov.identificador ,prov.codigo_tipo_documento,td.descripcion,prov.nombre_proveedor ,prov.telefono_proveedor ,prov.correo_proveedor,prov.direccion_proveedor
+from proveedores prov, tipo_documentos td
+where prov.codigo_tipo_documento = td.codigo_tipo_documento
+and upper(nombre_proveedor) like '%JH%'
+
+select prod.codigo_producto, prod.nombre_producto, udm.codigo_udm as nombre_udm,udm.descripcion as descripcion_udm, 
+prod.precio_venta, prod.tiene_iva, prod.coste, prod.codigo_cat as categoria, cat.nombre as nombre_categoria,prod.stock 
+from  productos prod, unidades_medida udm, categorias cat
+where prod.codigo_udm = udm.codigo_udm
+and prod.codigo_cat = cat.codigo_cat
+and upper(prod.nombre_producto) like '%M%'
+
+select * from proveedores
+select * from tipo_documentos
+select * from unidades_medida
+select * from productos
+
+
+
+select * from cabecera_pedido
+select * from detalle_pedido
+
+select * from historial_stock
+select * from cabecera_ventas
 select * from detalle_ventas
+select * from productos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
