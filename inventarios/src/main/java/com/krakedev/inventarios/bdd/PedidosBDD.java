@@ -11,7 +11,10 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.krakedev.inventarios.entidades.DetallePedido;
+import com.krakedev.inventarios.entidades.EstadoPedido;
 import com.krakedev.inventarios.entidades.Pedido;
+import com.krakedev.inventarios.entidades.Producto;
+import com.krakedev.inventarios.entidades.Proveedor;
 import com.krakedev.inventarios.excepciones.KrakedevException;
 import com.krakedev.inventarios.utils.ConexionBDD;
 
@@ -148,5 +151,73 @@ public class PedidosBDD {
 			}
 
 		}
+	}
+	
+	//buscar pedidos por proveedor
+	public ArrayList<Pedido>buscarPedidosPorProveedor(String subcadena) throws KrakedevException{
+		ArrayList<Pedido> pedidos = new ArrayList<Pedido>();
+		Connection con = null;
+		PreparedStatement ps=null;
+		ResultSet rs = null;
+		Pedido pedido = null;
+		
+		try {
+			con = ConexionBDD.obtenerConexion();
+			ps = con.prepareStatement("select cp.numero_cabecera_pedido, cp.identificador,cp.fecha, cp.codigo_estado_pedido,"
+					+ "dp.codigo_detalle_pedido, dp.codigo_producto, p.nombre_producto, dp.cantidad_solicitada, "
+					+ "cast(dp.subtotal as decimal(6,2)), dp.cantidad_recibida "
+					+ "from cabecera_pedido cp, detalle_pedido dp, productos p "
+					+ "where cp.numero_cabecera_pedido = dp.numero_cabecera_pedido "
+					+ "and dp.codigo_producto = p.codigo_producto "
+					+ "and cp.identificador like ?");
+			ps.setString(1,subcadena);
+			rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				int codigoCP = rs.getInt("numero_cabecera_pedido");
+				String identificador = rs.getString("identificador");
+				Date fecha = rs.getDate("fecha");
+				String estadoPedido = rs.getString("codigo_estado_pedido");
+				int codigoDP = rs.getInt("codigo_detalle_pedido");
+				int codigoProducto = rs.getInt("codigo_producto");
+				String nombreProducto = rs.getString("nombre_producto");
+				int cantidaSolicitada = rs.getInt("cantidad_solicitada");
+				BigDecimal subtotal = rs.getBigDecimal("subtotal");
+				int cantidadRecibida = rs.getInt("cantidad_recibida");
+				
+				Proveedor proveedor = new Proveedor();
+				proveedor.setIdentificador(identificador);
+				
+				EstadoPedido estado = new EstadoPedido();
+				estado.setCodigo(estadoPedido);
+				
+				Producto p = new Producto();
+				p.setCodigo(codigoProducto);
+				p.setNombre(nombreProducto);
+				
+				ArrayList<DetallePedido>detPed = new ArrayList<DetallePedido>();
+				DetallePedido dp = new DetallePedido();
+				dp.setCodigo(codigoDP);
+				dp.setProducto(p);
+				dp.setCantidadSolicitada(cantidaSolicitada);
+				dp.setSubtotal(subtotal);
+				dp.setCantidadRecibida(cantidadRecibida);
+				
+				detPed.add(dp);
+				
+				pedido = new Pedido(codigoCP, proveedor, fecha, estado, detPed); 
+				pedidos.add(pedido);
+				
+			}
+			
+		} catch (KrakedevException e) {
+			e.printStackTrace();
+			throw e;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new KrakedevException("Error al consultar. Detalle : "+ e.getMessage());
+		}
+		
+		return pedidos;
 	}
 }

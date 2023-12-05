@@ -50,4 +50,21 @@ public class ServiciosProveedores {
 		}
 		
 	}
+	
+	@Path("buscarIdentificador/{id}")
+	@GET
+	@Produces("application/json")
+	public Response buscarPorIdentificador(@PathParam("id")  String id){
+		ProveedoresBDD provBDD = new ProveedoresBDD();
+		Proveedor prov = null;
+		try {
+			prov = provBDD.buscarPorIdentificador(id);
+			//si todo esta correcto envia status 200
+			return Response.ok(prov).build();
+		} catch (KrakedevException e) {
+			e.printStackTrace();
+			//si algo falla devuelve el status 500 
+			return Response.serverError().build();
+		}
+	}
 }

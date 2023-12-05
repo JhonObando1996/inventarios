@@ -12,6 +12,8 @@ import com.krakedev.inventarios.excepciones.KrakedevException;
 import com.krakedev.inventarios.utils.ConexionBDD;
 
 public class ProveedoresBDD {
+	
+	//buscar proveedores por subcadena
 	public ArrayList<Proveedor>buscar(String subcadena) throws KrakedevException{
 		ArrayList<Proveedor> proveedores = new ArrayList<Proveedor>();
 		Connection con = null;
@@ -54,6 +56,7 @@ public class ProveedoresBDD {
 		return proveedores;
 	}
 	
+	//recuperar todos los tipos de documentos
 	public ArrayList<TipoDocumentos>recuperarTodos() throws KrakedevException{
 		ArrayList<TipoDocumentos> tipoDocumentos = new ArrayList<TipoDocumentos>();
 		Connection con = null;
@@ -119,5 +122,47 @@ public class ProveedoresBDD {
 			}
 
 		}
+	}
+	
+	//buscar proveedor por identificador 
+	
+	public Proveedor buscarPorIdentificador(String id) throws KrakedevException{
+		
+		Connection con = null;
+		PreparedStatement ps=null;
+		ResultSet rs = null;
+		Proveedor proveedor = null;
+		
+		try {
+			con = ConexionBDD.obtenerConexion();
+			ps = con.prepareStatement("select prov.identificador,prov.codigo_tipo_documento,td.descripcion,prov.nombre_proveedor,prov.telefono_proveedor,prov.correo_proveedor,prov.direccion_proveedor "
+					+ "from proveedores prov, tipo_documentos td "
+					+ "where prov.identificador = ?");
+			ps.setString(1,id);
+			rs = ps.executeQuery();
+			
+			if(rs.next()) {
+				String identificador = rs.getString("identificador");
+				String codigoTipoDocumento = rs.getString("codigo_tipo_documento");
+				String descripcionTipoDocumento = rs.getString("descripcion");
+				String nombre = rs.getString("nombre_proveedor");
+				String telefono = rs.getString("telefono_proveedor");
+				String correo = rs.getString("correo_proveedor");
+				String direccion = rs.getString("direccion_proveedor");
+				TipoDocumentos td = new TipoDocumentos(codigoTipoDocumento, descripcionTipoDocumento);
+				
+				proveedor = new Proveedor(identificador, td, nombre, telefono, correo, direccion);
+				
+			}
+			
+		} catch (KrakedevException e) {
+			e.printStackTrace();
+			throw e;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new KrakedevException("Error al consultar. Detalle : "+ e.getMessage());
+		}
+		
+		return proveedor;
 	}
 }
